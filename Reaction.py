@@ -61,21 +61,21 @@ class Reaction:
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
         comp_IS = [atom.symbol for atom in self.IS.atoms]
         comp_FS = [atom.symbol for atom in self.FS.atoms]
-        dE = engfun(self.IS,T,P) - engfun(self.FS,T,P)
+        dE = engfun(self.FS,T,P) - engfun(self.IS,T,P)
         
         #elements missing from FS
         if len(comp_IS) > len(comp_FS):
             comp_diff = [item for item in comp_IS if item not in comp_FS]
             for elem in comp_diff:
                 for gas in self.refs[elem]:
-                    dE -= self.refs[elem][gas] * engfun(self.gases[gas],T,P)
+                    dE += self.refs[elem][gas] * engfun(self.gases[gas],T,P)
         
         #elements missing from IS
         else:
             comp_diff = [item for item in comp_FS if item not in comp_IS]
             for elem in comp_diff:
                 for gas in self.refs[elem]:
-                    dE += self.refs[elem][gas] * engfun(self.gases[gas],T,P)
+                    dE -= self.refs[elem][gas] * engfun(self.gases[gas],T,P)
         if verbose:
             print " Elemental Difference: ",comp_diff
         return dE
