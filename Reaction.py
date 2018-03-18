@@ -25,11 +25,19 @@ class Reaction:
         self.name = name
         self.tag = tag
         
-        if IS.calc_params == FS.calc_params:
-            self.calc_params = IS.calc_params
+        if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
+                IS.calc_params['xc'] == FS.calc_params['xc'] ):
+            #need a way to check psps too
+            if IS.calc_params['psp'] > FS.calc_params['psp']:
+                self.calc_params = IS.calc_params
+            else:
+                self.calc_params = FS.calc_params
             print self.calc_params
         else:
-            print "IS and FS calc params are different."        
+            print "Error: IS and FS calc params are different."    
+            print "IS: ", self.IS.calc_params 
+            print "FS: ", self.FS.calc_params
+            exit()
 
         self.refs = refs
         self.gases = {}
@@ -44,9 +52,9 @@ class Reaction:
                         symmetrynumber = gas_params[gas][1],
                         geometry = gas_params[gas][2],
                         traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
-                                %(gas,self.calc_params['psp'],self.calc_params['xc'],self.calc_params['pw']),
+                                %(gas,self.calc_params['psp'][ref],self.calc_params['xc'],self.calc_params['pw']),
                         beef_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
-                                %(gas,self.calc_params['psp'],self.calc_params['xc'],self.calc_params['pw']),
+                                %(gas,self.calc_params['psp'][ref],self.calc_params['xc'],self.calc_params['pw']),
                         vib_loc ='/home/alatimer/work_dir/gases/%s/vibs/'%(gas),
                         species_type = 'gas',
                         calc_params = self.calc_params,
