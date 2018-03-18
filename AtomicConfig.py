@@ -5,6 +5,8 @@ import pickle
 import numpy as np
 from ase.vibrations import Vibrations
 from ase.thermochemistry import HarmonicThermo, IdealGasThermo
+from glob import glob
+import re
 
 class AtomicConfig:
     """
@@ -21,14 +23,14 @@ class AtomicConfig:
             symmetrynumber = None,
             geometry = None,
             spin = None,
-            calc_params = {'pw':'550','xc':'beef','psp':'gbrv'},
+            calc_params = None,#{'pw':'550','xc':'beef','psp':'gbrv'},
             tag = '',
             ):
 
         self.surf_name = surf_name
         self.surf_class = surf_class
         self.species_name = species_name
-        self.calc_params = calc_params
+        #self.calc_params = calc_params
         self.species_type = species_type
         self.symmetrynumber = symmetrynumber
         self.geometry = geometry
@@ -37,6 +39,7 @@ class AtomicConfig:
 
         if traj_loc != None:
             self.atoms = read(traj_loc)
+            self.calc_params = self.get_calc_params(traj_loc)
         if beef_loc != None:   
             self.beef = self.beef_reader(traj_loc)
         if vib_loc != None:
@@ -53,6 +56,34 @@ class AtomicConfig:
                 self.gibbs = HarmonicThermo(vib_energies = self.vibs, potentialenergy = 0)
             else:
                 self.gibbs = None
+
+    def get_calc_params(self,traj_loc):
+        directory = '/'.join(traj_loc.split('/')[0:-1])
+        calcdirs = glob(directory+'/*/log')
+        log_file = open(calcdirs[0],'r')
+        calc_params = {}
+        for line in log_file:
+            line = line.strip()
+            if line.startswith('Exchange-correlation'):
+                if 'BEEF' in line:
+                    xc='beef'
+                elif 'RPBE' in line:
+                    xc = 'rpbe'
+                elif 'PBE' in line:
+                    xc = 'pbe'
+            if line.startswith('/home/alatimer/bin/psp/'):
+                psp = line.split('/')[-2]
+            if line.startswith('kinetic-energy cutoff'):
+                pw = float(re.findall("\d+\.\d+", line)[0])
+                pw *=13.61 #ryd to ev
+                pw = str(int(pw)) #round pw and turn to str
+        calc_params['xc'] = xc
+        calc_params['pw'] = pw
+        calc_params['psp'] = psp
+        if len(calc_params)<3:
+            print "Unable to extract calculator parameters automatically, user can supply manually."
+            exit()
+        return calc_params
 
     def beef_reader(self,traj_loc):
         directory = '/'.join(traj_loc.split('/')[0:-1])
