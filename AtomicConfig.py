@@ -23,20 +23,21 @@ class AtomicConfig:
             symmetrynumber = None,
             geometry = None,
             spin = None,
-            calc_params = None,#{'pw':'550','xc':'beef','psp':'gbrv'},
+            calc_params = None,
             tag = '',
             ):
 
         self.surf_name = surf_name
         self.surf_class = surf_class
         self.species_name = species_name
-        #self.calc_params = calc_params
         self.species_type = species_type
         self.symmetrynumber = symmetrynumber
         self.geometry = geometry
         self.spin = spin
         self.tag = tag
 
+        if calc_params != None:
+            self.calc_params = calc_params
         if traj_loc != None:
             self.atoms = read(traj_loc)
             self.calc_params = self.get_calc_params(traj_loc)
@@ -62,8 +63,10 @@ class AtomicConfig:
         calcdirs = glob(directory+'/*/log')
         log_file = open(calcdirs[0],'r')
         calc_params = {}
+        calc_params['psp'] = {}
         for line in log_file:
             line = line.strip()
+            #XC
             if line.startswith('Exchange-correlation'):
                 if 'BEEF' in line:
                     xc='beef'
@@ -71,15 +74,19 @@ class AtomicConfig:
                     xc = 'rpbe'
                 elif 'PBE' in line:
                     xc = 'pbe'
-            if line.startswith('/home/alatimer/bin/psp/'):
-                psp = line.split('/')[-2]
+            #PSP
+            if  line.startswith('/home/vossj/suncat/') or  line.startswith('/home/alatimer/bin/psp/'):
+                elem = ((line.split('/')[-1]).split('.'))[0]
+                psp = line
+                calc_params['psp'][elem]=psp
+            #PW
             if line.startswith('kinetic-energy cutoff'):
                 pw = float(re.findall("\d+\.\d+", line)[0])
                 pw *=13.61 #ryd to ev
                 pw = str(int(pw)) #round pw and turn to str
         calc_params['xc'] = xc
         calc_params['pw'] = pw
-        calc_params['psp'] = psp
+        
         if len(calc_params)<3:
             print "Unable to extract calculator parameters automatically, user can supply manually."
             exit()
