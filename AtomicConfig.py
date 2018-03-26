@@ -31,6 +31,7 @@ class AtomicConfig:
         self.surf_class = surf_class
         self.species_name = species_name
         self.species_type = species_type
+        self.traj_loc = traj_loc
         self.symmetrynumber = symmetrynumber
         self.geometry = geometry
         self.spin = spin
@@ -40,9 +41,9 @@ class AtomicConfig:
             self.calc_params = calc_params
         if traj_loc != None:
             self.atoms = read(traj_loc)
-            self.calc_params = self.get_calc_params(traj_loc)
+            self.calc_params = self.get_calc_params()
         if beef_loc != None:   
-            self.beef = self.beef_reader(traj_loc)
+            self.beef = self.beef_reader()
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
             if self.species_type == 'gas':
@@ -58,10 +59,14 @@ class AtomicConfig:
             else:
                 self.gibbs = None
 
-    def get_calc_params(self,traj_loc):
-        directory = '/'.join(traj_loc.split('/')[0:-1])
-        calcdirs = glob(directory+'/*/log')
+    def get_calc_params(self):
+        directory = '/'.join(self.traj_loc.split('/')[0:-1])
+        if len(directory) < 1:
+            directory = '.'
+        calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')
         log_file = open(calcdirs[0],'r')
+        inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
+        inp_file = open(inpdirs[0],'r')
         calc_params = {}
         calc_params['psp'] = {}
         for line in log_file:
@@ -75,10 +80,11 @@ class AtomicConfig:
                 elif 'PBE' in line:
                     xc = 'pbe'
             #PSP
-            if  line.startswith('/home/vossj/suncat/') or  line.startswith('/home/alatimer/bin/psp/'):
-                elem = ((line.split('/')[-1]).split('.'))[0]
-                psp = line
-                calc_params['psp'][elem]=psp
+            if  line.startswith('PseudoPot.'):
+                elem = line.split()[4]
+            if line.startswith('MD5 check sum:'):
+                md5 = line.split()[-1]
+                calc_params['psp'][elem]=md5
             #PW
             if line.startswith('kinetic-energy cutoff'):
                 pw = float(re.findall("\d+\.\d+", line)[0])
@@ -86,17 +92,21 @@ class AtomicConfig:
                 pw = str(int(pw)) #round pw and turn to str
         calc_params['xc'] = xc
         calc_params['pw'] = pw
+        #Kpts
+        inplines = inp_file.readlines()
+        kpts = inplines[-1].split()
+        calc_params['kpts'] = ''.join(kpts[0:3])
         
         if len(calc_params)<3:
             print "Unable to extract calculator parameters automatically, user can supply manually."
             exit()
         return calc_params
 
-    def beef_reader(self,traj_loc):
-        directory = '/'.join(traj_loc.split('/')[0:-1])
+    def beef_reader(self):
+        directory = '/'.join(self.traj_loc.split('/')[0:-1])
         beef_array = pickle.load(open(directory + '/ensemble.pkl', 'r'))
         if abs(np.mean(beef_array)) < 100:
-            beef_array += read(traj_loc).get_potential_energy()
+            beef_array += read(self.traj_loc).get_potential_energy()
         return beef_array       
     
     def vibs_reader(self,vib_loc):

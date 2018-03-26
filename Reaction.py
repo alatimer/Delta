@@ -26,7 +26,8 @@ class Reaction:
         self.tag = tag
         
         if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
-                IS.calc_params['xc'] == FS.calc_params['xc'] ):
+                IS.calc_params['xc'] == FS.calc_params['xc'] and
+                IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
             #need a way to check psps too
             if IS.calc_params['psp'] > FS.calc_params['psp']:
                 self.calc_params = IS.calc_params
@@ -43,23 +44,29 @@ class Reaction:
         self.gases = {}
         #find somewhere else to put this
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
+        psps = ['gbrv','esp']
+
         for ref in refs:
+          if ref in self.calc_params['psp']:
             for gas in refs[ref]:
                 if gas not in self.gases:
-                    ac = AtomicConfig(
-                        species_name = gas,
-                        spin=gas_params[gas][0],
-                        symmetrynumber = gas_params[gas][1],
-                        geometry = gas_params[gas][2],
+                    for psp in psps:
+                        #fix this
                         traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
-                                %(gas,self.calc_params['psp'][ref],self.calc_params['xc'],self.calc_params['pw']),
-                        beef_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
-                                %(gas,self.calc_params['psp'][ref],self.calc_params['xc'],self.calc_params['pw']),
-                        vib_loc ='/home/alatimer/work_dir/gases/%s/vibs/'%(gas),
-                        species_type = 'gas',
-                        calc_params = self.calc_params,
-                          )
-                    self.gases[gas]=ac
+                                %(gas,psp,self.calc_params['xc'],self.calc_params['pw'])
+                        ac = AtomicConfig(
+                                species_name = gas,
+                                spin=gas_params[gas][0],
+                                symmetrynumber = gas_params[gas][1],
+                                geometry = gas_params[gas][2],
+                                traj_loc = traj_loc,
+                                #beef_loc = traj_loc,
+                                vib_loc = '/home/alatimer/work_dir/gases/%s/vibs/'%(gas),
+                                species_type = 'gas',
+                                calc_params = self.calc_params,
+                                )
+                        if ac.get_calc_params()['psp'][ref] == self.calc_params['psp'][ref]:
+                            self.gases[gas]=ac
 
 
     def E_fun(self,ac,T,P):
