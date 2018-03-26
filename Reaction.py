@@ -15,7 +15,7 @@ class Reaction:
     def __init__(self, 
             IS = None, #Reactant type
             FS =  None, #Reactant type
-            refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1,'H2':-2}},
+            refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
             name = None, #string
             tag = '',
             ):
@@ -34,51 +34,53 @@ class Reaction:
                 self.calc_params = IS.calc_params
             else:
                 self.calc_params = FS.calc_params
-            print self.calc_params
         else:
             print "Error: IS and FS calc params are different."    
             print "IS: ", self.IS.calc_params 
             print "FS: ", self.FS.calc_params
             exit()
 
-        comp_IS = [atom.symbol for atom in self.IS.atoms]
-        comp_FS = [atom.symbol for atom in self.FS.atoms]
-        if len(comp_IS) > len(comp_FS):
-            self.comp_diff = [item for item in comp_IS if item not in comp_FS]
-        else:
-            self.comp_diff = [item for item in comp_FS if item not in comp_IS]
-        
+        self.comp_dict = {}
+        for atom in self.IS.atoms:
+            if self.comp_dict.has_key(atom.symbol)==True:
+                self.comp_dict[atom.symbol]+=1
+            else:
+                self.comp_dict[atom.symbol]=1
+        for atom in self.FS.atoms:
+            if self.comp_dict.has_key(atom.symbol)==True:
+                self.comp_dict[atom.symbol]-=1
+            else:
+                self.comp_dict[atom.symbol]=-1
+        print "comp diff:",self.comp_dict
+
         self.refs = refs
         self.gases = {}
         #This info will be moved to gas DB
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
-        psps = ['gbrv','esp']
+        
+        #Reference gases
+        gasDB = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
+        gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
+        gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
 
-        #for ref in refs:
-          #if ref in self.calc_params['psp']:
-        for ref in self.comp_diff:
-            for gas in refs[ref]:
-                if gas not in self.gases:
-                    #checking if psp is correct one
-                    for psp in psps:
-                        #will be turned into DB
-                        traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
-                                %(gas,psp,self.calc_params['xc'],self.calc_params['pw'])
-                        ac = Reactant(
-                                species_name = gas,
-                                spin=gas_params[gas][0],
-                                symmetrynumber = gas_params[gas][1],
-                                geometry = gas_params[gas][2],
-                                traj_loc = traj_loc,
-                                #beef_loc = traj_loc,
-                                vib_loc = '/home/alatimer/work_dir/gases/%s/vibs/'%(gas),
-                                species_type = 'gas',
-                                calc_params = self.calc_params,
-                                )
-         #               print ref,gas
-                        #if ac.get_calc_params()['psp'][ref] == self.calc_params['psp'][ref]:
-                        #    self.gases[gas]=ac
-
+        #janky...
+        i = 0
+        while i<4:
+          i+=1
+          for elem in self.refs:
+            if elem in self.calc_params['psp']:
+              for gas in refs[elem]:
+                if elem in gas:
+                  g = gasDB.filter(lambda x: gas == x.surf_name)
+                  g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
+                  if len(g.data)>1:
+                      print "Warning: Unclear choice of reference psp:"
+                      g.print_all()
+                  self.gases[gas] = g.data[0]
+                  for elem2 in string2symbols(gas):
+                    if elem2 not in self.calc_params:
+                      self.calc_params['psp'][elem2] = self.gases[gas].calc_params['psp'][elem2]
+        print self.calc_params
 
     def E_fun(self,ac,T,P):
         return ac.atoms.get_potential_energy()
@@ -88,37 +90,21 @@ class Reaction:
         comp_IS = [atom.symbol for atom in self.IS.atoms]
         comp_FS = [atom.symbol for atom in self.FS.atoms]
         dE = engfun(self.FS,T,P) - engfun(self.IS,T,P)
-        
-        gco = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
-
         #elements missing from FS
-        if len(comp_IS) > len(comp_FS):
-            comp_diff = [item for item in comp_IS if item not in comp_FS]
-            for elem in comp_diff:
+        #if len(comp_IS) > len(comp_FS):
+         #   comp_diff = [item for item in comp_IS if item not in comp_FS]
+        for elem in self.comp_dict:
+            if self.comp_dict[elem]!=0:
                 for gas in self.refs[elem]:
-                    gasobjs = gco.filter(lambda x: gas == x.name)
-                    gasobjs = gasobjs.filter(lambda x: self.calc_params['xc'] == x.xc)
-                    gasobjs = gasobjs.filter(lambda x: self.calc_params['pw'] == x.pw)
-                    for refelem in string2symbols(gas):
-                        gasobjs = gasobjs.filter(lambda x: self.calc_params['psp'][refelem] == x.psp_dict[refelem])
-                    gasobjs.print_all()
-                        
-                    dE += self.refs[elem][gas] * engfun(self.gases[gas],T,P)
-        
-        #elements missing from IS
-        else:
-            comp_diff = [item for item in comp_FS if item not in comp_IS]
-            for elem in comp_diff:
-                for gas in self.refs[elem]:
-                    dE -= self.refs[elem][gas] * engfun(self.gases[gas],T,P)
+                    dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,P))
         if verbose:
-            print " Elemental Difference: ",comp_diff
+            print " Elemental Difference: ",self.comp_dict
         return dE
     
     def get_dE(self,verbose=False):
         return self.get_dX(engfun=self.E_fun,verbose=verbose)
-    def get_dG(self,T,P=101325):
-        return self.get_dX(engfun=self.G_fun,T=T,P=P)
+    def get_dG(self,T,P=101325,verbose=False):
+        return self.get_dX(engfun=self.G_fun,T=T,P=P,verbose=verbose)
     def get_dH(self):
         return
 

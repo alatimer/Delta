@@ -64,12 +64,13 @@ class Reactant:
         if len(directory) < 1:
             directory = '.'
         calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')
-        log_file = open(calcdirs[0],'r')
+        log_file = open(calcdirs[0],'r').readlines()
         inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
         inp_file = open(inpdirs[0],'r')
         calc_params = {}
         calc_params['psp'] = {}
-        for line in log_file:
+        
+        for i,line in enumerate(log_file):
             line = line.strip()
             #XC
             if line.startswith('Exchange-correlation'):
@@ -82,8 +83,7 @@ class Reactant:
             #PSP
             if  line.startswith('PseudoPot.'):
                 elem = line.split()[4]
-            if line.startswith('MD5 check sum:'):
-                md5 = line.split()[-1]
+                md5 = log_file[i+2].split()[-1]
                 calc_params['psp'][elem]=md5
             #PW
             if line.startswith('kinetic-energy cutoff'):
@@ -152,8 +152,8 @@ class Reactants:
     """
     """
 
-    def __init__(self, dftclasses):
-        self.data = dftclasses
+    def __init__(self, classes):
+        self.data = classes
 
     def filter(self, fun, *args, **kwargs):
         """
@@ -169,7 +169,7 @@ class Reactants:
             if bool:
                 out.append(c)
 
-        return dftclasses(out)
+        return Reactants(out)
 
     def get_property(self, ppt):
         """
@@ -179,3 +179,7 @@ class Reactants:
         for c in self.data:
             eval('out.append(c.%s)' % ppt)
         return np.array(out)
+
+    def print_all(self):
+        for c in self.data:
+            print "%s   %s    "%(c.surf_name,c.calc_params)
