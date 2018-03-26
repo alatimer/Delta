@@ -25,6 +25,7 @@ class Reaction:
         self.name = name
         self.tag = tag
         
+        #make sure calculation parameters are equivalent in IS and FS
         if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
                 IS.calc_params['xc'] == FS.calc_params['xc'] and
                 IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
@@ -40,18 +41,27 @@ class Reaction:
             print "FS: ", self.FS.calc_params
             exit()
 
+        comp_IS = [atom.symbol for atom in self.IS.atoms]
+        comp_FS = [atom.symbol for atom in self.FS.atoms]
+        if len(comp_IS) > len(comp_FS):
+            self.comp_diff = [item for item in comp_IS if item not in comp_FS]
+        else:
+            self.comp_diff = [item for item in comp_FS if item not in comp_IS]
+        
         self.refs = refs
         self.gases = {}
-        #find somewhere else to put this
+        #This info will be moved to gas DB
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
         psps = ['gbrv','esp']
 
-        for ref in refs:
-          if ref in self.calc_params['psp']:
+        #for ref in refs:
+          #if ref in self.calc_params['psp']:
+        for ref in self.comp_diff:
             for gas in refs[ref]:
                 if gas not in self.gases:
+                    #checking if psp is correct one
                     for psp in psps:
-                        #fix this
+                        #will be turned into DB
                         traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
                                 %(gas,psp,self.calc_params['xc'],self.calc_params['pw'])
                         ac = AtomicConfig(
@@ -65,6 +75,7 @@ class Reaction:
                                 species_type = 'gas',
                                 calc_params = self.calc_params,
                                 )
+                        print ref,gas
                         if ac.get_calc_params()['psp'][ref] == self.calc_params['psp'][ref]:
                             self.gases[gas]=ac
 
