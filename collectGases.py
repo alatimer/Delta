@@ -19,7 +19,8 @@ for psp in psps:
     for xc in xcs:
         for pw in pws:
             for gas in gases:
-                traj='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'%(gas,psp,xc,pw)
+                traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
+                traj=traj_loc+'/qn.traj'
                 if os.path.exists(traj)==True  and os.stat(traj).st_size > 0:
                     energy = read(traj).get_potential_energy()
                    # print gas,psp,xc,pw
@@ -33,6 +34,10 @@ for psp in psps:
                         gc_list.append(gc)
                 else:
                    print "Warning: No calculation found for %s with params: %s, %s, %s"%(gas,psp,xc,str(pw))
+                   os.system('mkdir -p %s'%(traj_loc))
+                   os.system('cp gas_opt.py %s'%(traj_loc))
+                   os.system('cd %s'%(traj_loc))
+                   #os.system('sub gas_opt.py')
 
 gcs = Gas.GasCalcs(gc_list)
 
