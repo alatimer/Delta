@@ -5,7 +5,7 @@ import pickle
 import numpy as np
 from ase.vibrations import Vibrations
 from ase.thermochemistry import HarmonicThermo, IdealGasThermo
-from AtomicConfig import AtomicConfig
+from Reactant import Reactant
 from ase.atoms import string2symbols
 
 class Reaction:
@@ -13,8 +13,8 @@ class Reaction:
     """
 
     def __init__(self, 
-            IS = None, #AtomicConfig type
-            FS =  None, #AtomicConfig type
+            IS = None, #Reactant type
+            FS =  None, #Reactant type
             refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1,'H2':-2}},
             name = None, #string
             tag = '',
@@ -64,7 +64,7 @@ class Reaction:
                         #will be turned into DB
                         traj_loc='/home/alatimer/work_dir/gases/%s/%s/%s/%s/qn.traj'\
                                 %(gas,psp,self.calc_params['xc'],self.calc_params['pw'])
-                        ac = AtomicConfig(
+                        ac = Reactant(
                                 species_name = gas,
                                 spin=gas_params[gas][0],
                                 symmetrynumber = gas_params[gas][1],
@@ -75,9 +75,9 @@ class Reaction:
                                 species_type = 'gas',
                                 calc_params = self.calc_params,
                                 )
-                        print ref,gas
-                        if ac.get_calc_params()['psp'][ref] == self.calc_params['psp'][ref]:
-                            self.gases[gas]=ac
+         #               print ref,gas
+                        #if ac.get_calc_params()['psp'][ref] == self.calc_params['psp'][ref]:
+                        #    self.gases[gas]=ac
 
 
     def E_fun(self,ac,T,P):
@@ -89,11 +89,20 @@ class Reaction:
         comp_FS = [atom.symbol for atom in self.FS.atoms]
         dE = engfun(self.FS,T,P) - engfun(self.IS,T,P)
         
+        gco = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
+
         #elements missing from FS
         if len(comp_IS) > len(comp_FS):
             comp_diff = [item for item in comp_IS if item not in comp_FS]
             for elem in comp_diff:
                 for gas in self.refs[elem]:
+                    gasobjs = gco.filter(lambda x: gas == x.name)
+                    gasobjs = gasobjs.filter(lambda x: self.calc_params['xc'] == x.xc)
+                    gasobjs = gasobjs.filter(lambda x: self.calc_params['pw'] == x.pw)
+                    for refelem in string2symbols(gas):
+                        gasobjs = gasobjs.filter(lambda x: self.calc_params['psp'][refelem] == x.psp_dict[refelem])
+                    gasobjs.print_all()
+                        
                     dE += self.refs[elem][gas] * engfun(self.gases[gas],T,P)
         
         #elements missing from IS

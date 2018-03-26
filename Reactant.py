@@ -8,7 +8,7 @@ from ase.thermochemistry import HarmonicThermo, IdealGasThermo
 from glob import glob
 import re
 
-class AtomicConfig:
+class Reactant:
     """
     """
 
@@ -148,7 +148,7 @@ class AtomicConfig:
             return self.gibbs.get_internal_energy(T, verbose=verbose)
 
 
-class AtomicConfigs:
+class Reactants:
     """
     """
 
