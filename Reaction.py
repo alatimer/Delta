@@ -24,7 +24,9 @@ class Reaction:
         self.FS = FS
         self.name = name
         self.tag = tag
-        
+        self.refs = refs
+        self.gases = {}
+       
         #make sure calculation parameters are equivalent in IS and FS
         if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
                 IS.calc_params['xc'] == FS.calc_params['xc'] and
@@ -40,6 +42,7 @@ class Reaction:
             print "FS: ", self.FS.calc_params
             exit()
 
+        #Find elemental difference between IS and FS
         self.comp_dict = {}
         for atom in self.IS.atoms:
             if self.comp_dict.has_key(atom.symbol)==True:
@@ -53,8 +56,7 @@ class Reaction:
                 self.comp_dict[atom.symbol]=-1
         print "comp diff:",self.comp_dict
 
-        self.refs = refs
-        self.gases = {}
+        #Collecting reactants of required reference gases
         #This info will be moved to gas DB
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
         
@@ -90,9 +92,6 @@ class Reaction:
         comp_IS = [atom.symbol for atom in self.IS.atoms]
         comp_FS = [atom.symbol for atom in self.FS.atoms]
         dE = engfun(self.FS,T,P) - engfun(self.IS,T,P)
-        #elements missing from FS
-        #if len(comp_IS) > len(comp_FS):
-         #   comp_diff = [item for item in comp_IS if item not in comp_FS]
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
                 for gas in self.refs[elem]:
