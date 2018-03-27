@@ -47,6 +47,7 @@ class Reactant:
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
             if self.species_type == 'gas':
+                print self.vibs
                 self.gibbs = IdealGasThermo(vib_energies=self.vibs,
                                 potentialenergy=0,
                                 atoms=self.atoms,
@@ -56,6 +57,8 @@ class Reactant:
                                 )
             elif self.species_type == 'adsorbate':
                 self.gibbs = HarmonicThermo(vib_energies = self.vibs, potentialenergy = 0)
+                #print self.gibbs.get_helmholtz_energy(temperature=300)
+                #print "gibbs assigned"
             else:
                 self.gibbs = None
 
@@ -63,9 +66,12 @@ class Reactant:
         directory = '/'.join(self.traj_loc.split('/')[0:-1])
         if len(directory) < 1:
             directory = '.'
-        calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')
+        calcdirs = glob(directory+'/*/log')
+        #print calcdirs
+        calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')#+glob(directory+'/vibdir_0000/log')
         log_file = open(calcdirs[0],'r').readlines()
-        inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
+        inpdirs = glob(directory+'/*/pw.inp')
+        #inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
         inp_file = open(inpdirs[0],'r')
         calc_params = {}
         calc_params['psp'] = {}
@@ -75,11 +81,14 @@ class Reactant:
             #XC
             if line.startswith('Exchange-correlation'):
                 if 'BEEF' in line:
-                    xc='beef'
+                    xc='BEEF'
+                    #xc='beef'
                 elif 'RPBE' in line:
-                    xc = 'rpbe'
+                    xc='RPBE'
+                    #xc = 'rpbe'
                 elif 'PBE' in line:
-                    xc = 'pbe'
+                    xc='PBE'
+                    #xc = 'pbe'
             #PSP
             if  line.startswith('PseudoPot.'):
                 elem = line.split()[4]
@@ -132,6 +141,7 @@ class Reactant:
         if self.species_type == 'gas':
             Gcorr = self.gibbs.get_gibbs_energy(T,P,verbose=verbose)
         elif self.species_type == 'adsorbate':
+            print self.vibs
             Gcorr = self.gibbs.get_helmholtz_energy(T,verbose=verbose)
         elif self.species_type == 'slab':
             Gcorr = 0

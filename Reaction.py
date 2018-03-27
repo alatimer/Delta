@@ -64,6 +64,7 @@ class Reaction:
         gasDB = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
         gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
         gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
+        print gasDB.data
 
         #janky...
         i = 0
@@ -74,10 +75,13 @@ class Reaction:
               for gas in refs[elem]:
                 if elem in gas:
                   g = gasDB.filter(lambda x: gas == x.surf_name)
+                  g.print_all()
                   g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
+                  print g.data
                   if len(g.data)>1:
                       print "Warning: Unclear choice of reference psp:"
                       g.print_all()
+                  print g.data
                   self.gases[gas] = g.data[0]
                   for elem2 in string2symbols(gas):
                     if elem2 not in self.calc_params:

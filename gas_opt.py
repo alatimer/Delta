@@ -3,7 +3,9 @@
 #SBATCH --qos=iric
 #SBATCH --output=myjob.out
 #SBATCH --error=myjob.err
-#SBATCH --time=20:00
+#SBATCH --time=2:00:00
+#SBATCH --mail-type=FAIL                            #get emailed about job BEGIN, END, or FAIL
+#SBATCH  --mail-user=allegralatimer@gmail.com
 #SBATCH --nodes=1
 #SBATCH --mem-per-cpu=4000
 #SBATCH --ntasks-per-node=16
@@ -17,16 +19,22 @@ from ase.dft.bee import BEEF_Ensemble
 import cPickle as pickle
 from ase.io import read
 import sys
+import os
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 3:
     print "USAGE: sub_opt.py traj_file xc pw psppath"
     exit()
 
-atoms = read(sys.argv[1])
-xc = sys.argv[2]
-pw = int(sys.argv[3])
+if os.path.exists('qn.traj')==True  and os.stat("qn.traj").st_size > 0:
+        atoms =read('qn.traj')
+        atoms.write('pre.traj')
+else:
+        atoms = read('init.traj')
+
+xc = sys.argv[1]
+pw = int(sys.argv[2])
 dw = pw*10
-psppath = sys.argv[4]
+psppath = sys.argv[3]
 dipole = {'status':False}
 spinpol = True
 output = {'removesave':True}
@@ -50,6 +58,7 @@ calc = espresso(pw=pw,	#plane-wave cutoff
                 					#the valence electrons
                 sigma=0.1,
                 psppath = psppath,
+                spinpol=spinpol,
                 convergence= {'energy':1e-5,
 					               'mixing':0.1,
 					               'nmix':10,
@@ -81,6 +90,7 @@ calc2 = vibespresso(pw=pw,	#plane-wave cutoff
                 nbands=-30,	#10 extra bands besides the bands needed to hold
                 					#the valence electrons
                 sigma=0.1,
+                spinpol=spinpol,
                 convergence= {'energy':1e-5,
 					               'mixing':0.1,
 					               'nmix':10,
