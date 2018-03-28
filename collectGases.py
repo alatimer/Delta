@@ -5,7 +5,7 @@ from Delta import Gas,Reactant
 from ase.io import read,write
 import os
 
-gases = ['CH4','O2','H2O']
+gases = ['CH4','O2','H2O','H2']
 psps = ['esp','gbrv']
 xcs = ['RPBE','BEEF','PBE']
 #pws = ['400','550']

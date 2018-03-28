@@ -66,9 +66,9 @@ class Reactant:
         directory = '/'.join(self.traj_loc.split('/')[0:-1])
         if len(directory) < 1:
             directory = '.'
-        calcdirs = glob(directory+'/*/log')
-        #print calcdirs
         calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')#+glob(directory+'/vibdir_0000/log')
+        if calcdirs == []:
+            calcdirs = glob(directory+'/*/log')
         log_file = open(calcdirs[0],'r').readlines()
         inpdirs = glob(directory+'/*/pw.inp')
         #inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')

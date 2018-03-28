@@ -3,7 +3,7 @@
 #SBATCH --qos=iric
 #SBATCH --output=myjob.out
 #SBATCH --error=myjob.err
-#SBATCH --time=2:00:00
+#SBATCH --time=15:00:00
 #SBATCH --mail-type=FAIL                            #get emailed about job BEGIN, END, or FAIL
 #SBATCH  --mail-user=allegralatimer@gmail.com
 #SBATCH --nodes=1
@@ -17,9 +17,10 @@ from espresso import espresso
 from espresso.vibespresso import vibespresso
 from ase.dft.bee import BEEF_Ensemble
 import cPickle as pickle
-from ase.io import read
+from ase.io import read,write,Trajectory
 import sys
 import os
+import pdos,bader
 
 if len(sys.argv) < 3:
     print "USAGE: sub_opt.py traj_file xc pw psppath"
@@ -90,6 +91,7 @@ calc2 = vibespresso(pw=pw,	#plane-wave cutoff
                 nbands=-30,	#10 extra bands besides the bands needed to hold
                 					#the valence electrons
                 sigma=0.1,
+                psppath = psppath,
                 spinpol=spinpol,
                 convergence= {'energy':1e-5,
 					               'mixing':0.1,

@@ -54,7 +54,7 @@ class Reaction:
                 self.comp_dict[atom.symbol]-=1
             else:
                 self.comp_dict[atom.symbol]=-1
-        print "comp diff:",self.comp_dict
+        #print "comp diff:",self.comp_dict
 
         #Collecting reactants of required reference gases
         #This info will be moved to gas DB
@@ -64,7 +64,7 @@ class Reaction:
         gasDB = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
         gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
         gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
-        print gasDB.data
+        #print gasDB.data
 
         #janky...
         i = 0
@@ -75,18 +75,18 @@ class Reaction:
               for gas in refs[elem]:
                 if elem in gas:
                   g = gasDB.filter(lambda x: gas == x.surf_name)
-                  g.print_all()
+                  #g.print_all()
                   g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
-                  print g.data
+                  #print g.data
                   if len(g.data)>1:
                       print "Warning: Unclear choice of reference psp:"
                       g.print_all()
-                  print g.data
+                  #print g.data
                   self.gases[gas] = g.data[0]
                   for elem2 in string2symbols(gas):
                     if elem2 not in self.calc_params:
                       self.calc_params['psp'][elem2] = self.gases[gas].calc_params['psp'][elem2]
-        print self.calc_params
+        #print self.calc_params
 
     def E_fun(self,ac,T,P):
         return ac.atoms.get_potential_energy()
