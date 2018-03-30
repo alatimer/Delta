@@ -12,6 +12,8 @@ xcs = ['RPBE','BEEF','PBE']
 pws = ['400','450','500','550','600','650','700']
 gc_list = []
 
+gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
+
 for psp in psps:
     for xc in xcs:
         for pw in pws:
@@ -20,12 +22,17 @@ for psp in psps:
                 traj_loc=directory+'/pre.traj'
                 if os.path.exists(traj_loc)==True  and os.stat(traj_loc).st_size > 0:
                     energy = read(traj_loc).get_potential_energy()
-                    print traj_loc
+                    #print traj_loc
                     gc = Reactant.Reactant(
                             traj_loc=traj_loc,
-                          #  vib_loc=directory,
+                            vib_loc=directory,
+                           # beef_loc=traj_loc,
                             species_type='gas',
-                            surf_name=gas)
+                            surf_name=gas,
+                            symmetrynumber=gas_params[gas][1],
+                            geometry=gas_params[gas][2],
+                            spin=gas_params[gas][0],
+                            )
                     calc_check = gc.get_calc_params()
                     ##Always giving same psp tag
                     if calc_check['pw'] == pw and calc_check['xc'] == xc:

@@ -38,13 +38,13 @@ class Reactant:
         self.spin = spin
         self.tag = tag
 
-        if calc_params != None:
-            self.calc_params = calc_params
+        #if calc_params != None:
+        #    self.calc_params = calc_params
         if traj_loc != None:
             self.atoms = read(traj_loc)
             self.calc_params = self.get_calc_params()
-        #if beef_loc != None:   
-            self.beef = self.beef_reader()
+            if self.calc_params['xc']=='BEEF':   
+                self.beef = self.beef_reader()
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
             if self.species_type == 'gas':
