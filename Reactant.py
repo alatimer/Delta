@@ -7,6 +7,7 @@ from ase.vibrations import Vibrations
 from ase.thermochemistry import HarmonicThermo, IdealGasThermo
 from glob import glob
 import re
+import os
 
 class Reactant:
     """
@@ -42,7 +43,7 @@ class Reactant:
         if traj_loc != None:
             self.atoms = read(traj_loc)
             self.calc_params = self.get_calc_params()
-        if beef_loc != None:   
+        #if beef_loc != None:   
             self.beef = self.beef_reader()
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
@@ -66,9 +67,9 @@ class Reactant:
         directory = '/'.join(self.traj_loc.split('/')[0:-1])
         if len(directory) < 1:
             directory = '.'
-        calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')#+glob(directory+'/vibdir_0000/log')
-        if calcdirs == []:
-            calcdirs = glob(directory+'/*/log')
+        #calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')#+glob(directory+'/vibdir_0000/log')
+        #if calcdirs == []:
+        calcdirs = glob(directory+'/*/log')
         log_file = open(calcdirs[0],'r').readlines()
         inpdirs = glob(directory+'/*/pw.inp')
         #inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
@@ -113,6 +114,9 @@ class Reactant:
 
     def beef_reader(self):
         directory = '/'.join(self.traj_loc.split('/')[0:-1])
+        if os.path.exists(directory+'/ensemble.pkl')==False  or os.stat(directory+'/ensemble.pkl').st_size == 0:
+            print "Warning: No beef ensemble for %s"%(directory)
+            return
         beef_array = pickle.load(open(directory + '/ensemble.pkl', 'r'))
         if abs(np.mean(beef_array)) < 100:
             beef_array += read(self.traj_loc).get_potential_energy()
