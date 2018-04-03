@@ -18,6 +18,7 @@ class Reaction:
             refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
             name = None, #string
             tag = '',
+            electrochemical=False,
             ):
 
         self.IS = IS
@@ -25,6 +26,7 @@ class Reaction:
         self.name = name
         self.tag = tag
         self.refs = refs
+        self.electrochemical=electrochemical
         self.gases = {}
        
         #make sure calculation parameters are equivalent in IS and FS
@@ -99,7 +101,11 @@ class Reaction:
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
                 for gas in self.refs[elem]:
-                    dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,P))
+                    ##for liquid water
+                    if gas == 'H2O' and self.electrochemical==True:
+                        dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,101325*0.035))
+                    else:
+                        dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,P))
         if verbose:
             print " Elemental Difference: ",self.comp_dict
         return dE
