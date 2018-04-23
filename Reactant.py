@@ -26,6 +26,7 @@ class Reactant:
             spin = None,
             calc_params = None,
             tag = '',
+            repeat = 1,
             ):
 
         self.surf_name = surf_name
@@ -37,6 +38,7 @@ class Reactant:
         self.geometry = geometry
         self.spin = spin
         self.tag = tag
+        self.repeat = repeat
 
         #if calc_params != None:
         #    self.calc_params = calc_params
@@ -45,6 +47,9 @@ class Reactant:
             self.calc_params = self.get_calc_params()
             if self.calc_params['xc']=='BEEF':   
                 self.beef = self.beef_reader()
+        else:
+            self.atoms = []
+            self.calc_params = {}
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
             if self.species_type == 'gas':
@@ -62,6 +67,8 @@ class Reactant:
                 #print "gibbs assigned"
             else:
                 self.gibbs = None
+    
+        
 
     def get_calc_params(self):
         directory = '/'.join(self.traj_loc.split('/')[0:-1])
@@ -70,6 +77,10 @@ class Reactant:
         #calcdirs = glob(directory+'/ekspressen*/log')+glob(directory+'/calcdir/log')#+glob(directory+'/vibdir_0000/log')
         #if calcdirs == []:
         calcdirs = glob(directory+'/*/log')
+        if len(calcdirs) == 0:
+            print "No log file found for: %s"%(self.species_name)
+            calc_params = {'pw':None,'xc':None,'kpts':None,'psp':None}
+            return calc_params
         log_file = open(calcdirs[0],'r').readlines()
         inpdirs = glob(directory+'/*/pw.inp')
         #inpdirs = glob(directory+'/ekspressen*/pw.inp')+glob(directory+'/calcdir/pw.inp')
@@ -139,6 +150,7 @@ class Reactant:
             vibenergies.append(float(meV))
         #convert from meV to eV for each mode
         vibenergies[:] = [round(ve/1000.,4) for ve in vibenergies]    
+        print vibenergies
         return vibenergies
 
     def get_Gcorr(self,T,P=101325,verbose=False):

@@ -19,6 +19,7 @@ class Reaction:
             name = None, #string
             tag = '',
             electrochemical=False,
+            ignore=[],
             ):
 
         self.IS = IS
@@ -28,22 +29,28 @@ class Reaction:
         self.refs = refs
         self.electrochemical=electrochemical
         self.gases = {}
-       
-        #make sure calculation parameters are equivalent in IS and FS
-        if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
-                IS.calc_params['xc'] == FS.calc_params['xc'] and
-                IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
-            #need a way to check psps too
-            if IS.calc_params['psp'] > FS.calc_params['psp']:
-                self.calc_params = IS.calc_params
+        
+        if IS != None:
+            for item in ignore:
+                IS.calc_params[item] = None
+                FS.calc_params[item] = None
+            #make sure calculation parameters are equivalent in IS and FS
+            if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
+                    IS.calc_params['xc'] == FS.calc_params['xc'] and
+                    IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
+                #need a way to check psps too
+                if IS.calc_params['psp'] > FS.calc_params['psp']:
+                    self.calc_params = IS.calc_params
+                else:
+                    self.calc_params = FS.calc_params
             else:
-                self.calc_params = FS.calc_params
-        else:
-            print "Error: IS and FS calc params are different."    
-            print "IS: ", self.IS.calc_params 
-            print "FS: ", self.FS.calc_params
-            exit()
-
+                print "Error: IS and FS calc params are different."    
+                print "IS: ", self.IS.calc_params 
+                print "FS: ", self.FS.calc_params
+                exit()
+        if IS == None:
+            self.IS = Reactant()
+            self.calc_params = FS.calc_params
         #Find elemental difference between IS and FS
         self.comp_dict = {}
         for atom in self.IS.atoms:
@@ -88,12 +95,20 @@ class Reaction:
                   for elem2 in string2symbols(gas):
                     if elem2 not in self.calc_params:
                       self.calc_params['psp'][elem2] = self.gases[gas].calc_params['psp'][elem2]
-        #print self.calc_params
+        return
 
     def E_fun(self,ac,T,P):
-        return ac.atoms.get_potential_energy()
+        if ac !=None:
+            eng = ac.atoms.get_potential_energy()
+        else:
+            eng = 0
+        return eng
     def G_fun(self,ac,T,P):
-        return (ac.atoms.get_potential_energy()+ac.get_Gcorr(T,P))
+        if ac !=None:
+            eng = (ac.atoms.get_potential_energy()+ac.get_Gcorr(T,P))
+        else:
+            eng = 0
+        return eng
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
         comp_IS = [atom.symbol for atom in self.IS.atoms]
         comp_FS = [atom.symbol for atom in self.FS.atoms]
