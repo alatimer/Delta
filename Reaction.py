@@ -3,6 +3,7 @@ from ase import Atoms
 from ase.io import read, write
 import pickle
 import numpy as np
+import os
 from ase.vibrations import Vibrations
 from ase.thermochemistry import HarmonicThermo, IdealGasThermo
 from Reactant import Reactant
@@ -70,7 +71,9 @@ class Reaction:
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
         
         #Reference gases
-        gasDB = pickle.load(open('/home/alatimer/src/Delta/gases.pkl','rb'))
+        home = os.getenv('HOME')
+        print home
+        gasDB = pickle.load(open(home+'/src/Delta/gases.pkl','rb'))
         gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
         gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
         #print gasDB.data
