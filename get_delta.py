@@ -26,5 +26,5 @@ FS = Reactant.Reactant(
 
 rxn = Reaction.Reaction(FS=FS,IS=IS,refs=refs)
 print refs
-print "dE: ",rxn.get_dE(verbose=True)
-print "dG: ",rxn.get_dG(T=300,P=101325,verbose=True)
+print "dE: ",rxn.get_dE(verbose=False)
+print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)

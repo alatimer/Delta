@@ -1,4 +1,3 @@
-#Embedded file name: /scratch/users/alatimer/meoh-vs-methane/analysis/catclass.py
 from ase import Atoms
 from ase.io import read, write
 import pickle
@@ -20,7 +19,7 @@ class Reaction:
             name = None, #string
             tag = '',
             electrochemical=False,
-            ignore=[],
+            ignore=[], ###????
             ):
 
         self.IS = IS
@@ -40,7 +39,7 @@ class Reaction:
                     IS.calc_params['xc'] == FS.calc_params['xc'] and
                     IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
                 #need a way to check psps too
-                if IS.calc_params['psp'] > FS.calc_params['psp']:
+                if len(IS.calc_params['psp']) > len(FS.calc_params['psp']):
                     self.calc_params = IS.calc_params
                 else:
                     self.calc_params = FS.calc_params
@@ -52,6 +51,7 @@ class Reaction:
         if IS == None:
             self.IS = Reactant()
             self.calc_params = FS.calc_params
+        
         #Find elemental difference between IS and FS
         self.comp_dict = {}
         for atom in self.IS.atoms:
@@ -64,21 +64,18 @@ class Reaction:
                 self.comp_dict[atom.symbol]-=1
             else:
                 self.comp_dict[atom.symbol]=-1
-        #print "comp diff:",self.comp_dict
 
         #Collecting reactants of required reference gases
         #This info will be moved to gas DB
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
         
         #Reference gases
-        home = os.getenv('HOME')
-        print home
-        gasDB = pickle.load(open(home+'/src/Delta/gases.pkl','rb'))
+        classloc =  '/'.join(__file__.split('/')[0:-1])
+        gasDB = pickle.load(open(classloc+'/gases.pkl','rb'))
         gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
         gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
-        #print gasDB.data
-
-        #janky...
+        
+        #Finding ref gases with matching psps, janky...
         i = 0
         while i<4:
           i+=1
@@ -87,13 +84,10 @@ class Reaction:
               for gas in refs[elem]:
                 if elem in gas:
                   g = gasDB.filter(lambda x: gas == x.surf_name)
-                  #g.print_all()
                   g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
-                  #print g.data
                   if len(g.data)>1:
                       print "Warning: Unclear choice of reference psp:"
                       g.print_all()
-                  #print g.data
                   self.gases[gas] = g.data[0]
                   for elem2 in string2symbols(gas):
                     if elem2 not in self.calc_params:
