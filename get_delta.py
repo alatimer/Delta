@@ -24,7 +24,7 @@ FS = Reactant.Reactant(
     species_type = 'slab',
               )
 
-rxn = Reaction.Reaction(FS=FS,IS=IS,refs=refs)
+rxn = Reaction.Reaction(FSs=[FS],ISs=[IS],refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)

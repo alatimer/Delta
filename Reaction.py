@@ -13,8 +13,8 @@ class Reaction:
     """
 
     def __init__(self, 
-            IS = None, #Reactant type
-            FS =  None, #Reactant type
+            ISs = [], #Reactant type
+            FSs =  [], #Reactant type
             refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
             name = None, #string
             tag = '',
@@ -22,48 +22,53 @@ class Reaction:
             ignore=[], ###????
             ):
 
-        self.IS = IS
-        self.FS = FS
+        self.ISs = ISs
+        self.FSs = FSs
         self.name = name
         self.tag = tag
         self.refs = refs
         self.electrochemical=electrochemical
         self.gases = {}
         
-        if IS != None:
-            for item in ignore:
-                IS.calc_params[item] = None
-                FS.calc_params[item] = None
-            #make sure calculation parameters are equivalent in IS and FS
-            if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
-                    IS.calc_params['xc'] == FS.calc_params['xc'] and
-                    IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
-                #need a way to check psps too
-                if len(IS.calc_params['psp']) > len(FS.calc_params['psp']):
-                    self.calc_params = IS.calc_params
+        #checking calc params
+        for IS in self.ISs:
+            if isinstance(IS, str):
+                pass
+            for FS in self.FSs:
+                if isinstance(FS, str):
+                    pass
+                #for item in ignore:
+                #    IS.calc_params[item] = None
+                #    FS.calc_params[item] = None
+                #make sure calculation parameters are equivalent in IS and FS
+                if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
+                        IS.calc_params['xc'] == FS.calc_params['xc'] and
+                        IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
+                    #need a way to check psps too
+                    if len(IS.calc_params['psp']) > len(FS.calc_params['psp']):
+                        self.calc_params = IS.calc_params
+                    else:
+                        self.calc_params = FS.calc_params
                 else:
-                    self.calc_params = FS.calc_params
-            else:
-                print "Error: IS and FS calc params are different."    
-                print "IS: ", self.IS.calc_params 
-                print "FS: ", self.FS.calc_params
-                exit()
-        if IS == None:
-            self.IS = Reactant()
-            self.calc_params = FS.calc_params
+                    print "Error: IS and FS calc params are different."    
+                    print "IS: ", self.IS.calc_params 
+                    print "FS: ", self.FS.calc_params
+                    exit()
         
         #Find elemental difference between IS and FS
         self.comp_dict = {}
-        for atom in self.IS.atoms:
-            if self.comp_dict.has_key(atom.symbol)==True:
-                self.comp_dict[atom.symbol]+=1
-            else:
-                self.comp_dict[atom.symbol]=1
-        for atom in self.FS.atoms:
-            if self.comp_dict.has_key(atom.symbol)==True:
-                self.comp_dict[atom.symbol]-=1
-            else:
-                self.comp_dict[atom.symbol]=-1
+        for IS in self.ISs:
+            for atom in IS.atoms:
+                if self.comp_dict.has_key(atom.symbol)==True:
+                    self.comp_dict[atom.symbol]+=1
+                else:
+                    self.comp_dict[atom.symbol]=1
+        for FS in self.FSs:
+            for atom in FS.atoms:
+                if self.comp_dict.has_key(atom.symbol)==True:
+                    self.comp_dict[atom.symbol]-=1
+                else:
+                    self.comp_dict[atom.symbol]=-1
 
         #Collecting reactants of required reference gases
         #This info will be moved to gas DB
@@ -107,9 +112,11 @@ class Reaction:
             eng = 0
         return eng
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
-        comp_IS = [atom.symbol for atom in self.IS.atoms]
-        comp_FS = [atom.symbol for atom in self.FS.atoms]
-        dE = engfun(self.FS,T,P) - engfun(self.IS,T,P)
+        dE = 0
+        for IS in self.ISs:
+            dE-=engfun(IS,T,P)
+        for FS in self.FSs:
+            dE+=engfun(FS,T,P)
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
                 for gas in self.refs[elem]:
