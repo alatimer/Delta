@@ -28,3 +28,19 @@ rxn = Reaction.Reaction(FSs=[FS],ISs=[IS],refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
+
+print "Testing gas"
+
+FS = Reactant.Reactant(
+    traj_loc=home+'/src/Delta/test/CH3OHg/qn.traj',
+    species_type = 'gas',
+              )
+
+rxn = Reaction.Reaction(FSs=[FS],ISs=[],refs=refs)
+print refs
+print "dE: ",rxn.get_dE(verbose=False)
+print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
+
+print "Testing diff kpts"
+
+print "Testing diff psps"

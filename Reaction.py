@@ -31,11 +31,12 @@ class Reaction:
         self.gases = {}
         
         #checking calc params
-        for IS in self.ISs:
-            if isinstance(IS, str):
+        #need to assign calc_params in the case that IS or FS list is length zero
+        for FS in self.FSs:
+            if isinstance(FS, str):
                 pass
-            for FS in self.FSs:
-                if isinstance(FS, str):
+            for IS in self.ISs:
+                if isinstance(IS, str):
                     pass
                 #for item in ignore:
                 #    IS.calc_params[item] = None
