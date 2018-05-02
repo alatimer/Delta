@@ -1,0 +1,62 @@
+beefvdw ensemble started
+beefvdw ensemble finished
+Writing vib.eq.pckl
+Writing vib.0x-.pckl
+Writing vib.0x+.pckl
+Writing vib.0y-.pckl
+Writing vib.0y+.pckl
+Writing vib.0z-.pckl
+Writing vib.0z+.pckl
+Writing vib.1x-.pckl
+Writing vib.1x+.pckl
+Writing vib.1y-.pckl
+Writing vib.1y+.pckl
+Writing vib.1z-.pckl
+Writing vib.1z+.pckl
+Writing vib.2x-.pckl
+Writing vib.2x+.pckl
+Writing vib.2y-.pckl
+Writing vib.2y+.pckl
+Writing vib.2z-.pckl
+Writing vib.2z+.pckl
+Writing vib.3x-.pckl
+Writing vib.3x+.pckl
+Writing vib.3y-.pckl
+Writing vib.3y+.pckl
+Writing vib.3z-.pckl
+Writing vib.3z+.pckl
+Writing vib.4x-.pckl
+Writing vib.4x+.pckl
+Writing vib.4y-.pckl
+Writing vib.4y+.pckl
+Writing vib.4z-.pckl
+Writing vib.4z+.pckl
+Writing vib.5x-.pckl
+Writing vib.5x+.pckl
+Writing vib.5y-.pckl
+Writing vib.5y+.pckl
+Writing vib.5z-.pckl
+Writing vib.5z+.pckl
+---------------------
+  #    meV     cm^-1
+---------------------
+  0   15.1i    121.7i
+  1   11.8i     95.5i
+  2   10.9i     87.8i
+  3    0.4i      3.3i
+  4    1.0       8.1 
+  5    5.0      40.7 
+  6   34.3     276.5 
+  7  125.4    1011.1 
+  8  131.2    1058.5 
+  9  142.6    1149.9 
+ 10  166.8    1345.1 
+ 11  180.8    1458.3 
+ 12  182.2    1469.7 
+ 13  183.9    1483.2 
+ 14  371.5    2996.0 
+ 15  378.6    3053.8 
+ 16  388.6    3134.0 
+ 17  481.4    3882.6 
+---------------------
+Zero-point energy: 1.387 eV

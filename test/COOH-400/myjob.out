@@ -1,0 +1,42 @@
+Writing vib.eq.pckl
+Writing vib.36x-.pckl
+Writing vib.36x+.pckl
+Writing vib.36y-.pckl
+Writing vib.36y+.pckl
+Writing vib.36z-.pckl
+Writing vib.36z+.pckl
+Writing vib.37x-.pckl
+Writing vib.37x+.pckl
+Writing vib.37y-.pckl
+Writing vib.37y+.pckl
+Writing vib.37z-.pckl
+Writing vib.37z+.pckl
+Writing vib.38x-.pckl
+Writing vib.38x+.pckl
+Writing vib.38y-.pckl
+Writing vib.38y+.pckl
+Writing vib.38z-.pckl
+Writing vib.38z+.pckl
+Writing vib.39x-.pckl
+Writing vib.39x+.pckl
+Writing vib.39y-.pckl
+Writing vib.39y+.pckl
+Writing vib.39z-.pckl
+Writing vib.39z+.pckl
+---------------------
+  #    meV     cm^-1
+---------------------
+  0   17.0     136.8 
+  1   19.5     157.4 
+  2   27.7     223.7 
+  3   37.2     300.1 
+  4   42.6     343.8 
+  5   56.1     452.6 
+  6   78.5     633.3 
+  7   83.6     674.3 
+  8  135.3    1091.0 
+  9  157.8    1272.6 
+ 10  210.1    1694.4 
+ 11  431.9    3483.6 
+---------------------
+Zero-point energy: 0.649 eV

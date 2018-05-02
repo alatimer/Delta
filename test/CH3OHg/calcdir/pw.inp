@@ -1,0 +1,56 @@
+&CONTROL
+  calculation='relax',
+  prefix='calc',
+  pseudo_dir='/home/alatimer/bin/psp/gbrv/',
+  outdir='.',
+  tprnfor=.true.,
+/
+&SYSTEM
+  ibrav=0,
+  celldm(1)=1.8897261245650618d0,
+  nat=6,
+  ntyp=5,
+  ecutwfc=40.4242561699d0,
+  ecutrho=404.242561699d0,
+  nbnd=37,
+  occupations='smearing',
+  smearing='fd',
+  degauss=0.00734986475817d0,
+  nspin=2,
+  starting_magnetization(1)=0.0001d0,
+  starting_magnetization(2)=0.0d0,
+  starting_magnetization(3)=0.0d0,
+  starting_magnetization(4)=-0.0001d0,
+  starting_magnetization(5)=-0.0002d0,
+  input_dft='BEEF',
+/
+&ELECTRONS
+  diagonalization='david',
+  conv_thr=7.34986475817e-07,
+  mixing_ndim=10,
+  electron_maxstep=500,
+  mixing_beta=0.1d0,
+  conv_thr=7.34986475817e-07,
+/
+&IONS
+  ion_dynamics='ase3',
+/
+CELL_PARAMETERS
+   20.000000000000000d0     0.000000000000000d0     0.000000000000000d0
+    0.000000000000000d0    20.000000000000000d0     0.000000000000000d0
+    0.000000000000000d0     0.000000000000000d0    20.000000000000000d0
+ATOMIC_SPECIES
+C1 12.011d0 C.UPF
+O1 15.9994d0 O.UPF
+H1 1.00794d0 H.UPF
+H2 1.00794d0 H.UPF
+H3 1.00794d0 H.UPF
+ATOMIC_POSITIONS {crystal}
+C1       0.515768615131275d0     0.545814446362544d0     0.544491864265393d0
+O1       0.521254758465428d0     0.475110160526152d0     0.537161230031346d0
+H1       0.564226338719056d0     0.563397555597543d0     0.562221198223667d0
+H1       0.478540723464106d0     0.458255315452801d0     0.521350340170814d0
+H2       0.504548111237084d0     0.570672578820325d0     0.496908353467805d0
+H3       0.477605740349725d0     0.559828299567803d0     0.581302312119760d0
+K_POINTS automatic
+1 1 1 0 0 0
