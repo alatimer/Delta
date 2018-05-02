@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import pickle
-from Delta import Gas,Reactant
+from Delta import Reactant
 from ase.io import read,write
 import os
 
