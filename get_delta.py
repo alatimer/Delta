@@ -13,25 +13,25 @@ refs = {'H':{'H2':0.5},'O':{'H2O':1,'H2':-1},'C':{'CH4':1,'H2':-2}}
 
 home = os.getenv('HOME')
 
-IS = Reactant.Reactant(
+COOH = Reactant.Reactant(
     species_name='COOH',
     traj_loc=home+'/src/Delta/test/COOH/qn.traj',
     vib_loc=home+'/src/Delta/test/COOH/',
     species_type = 'adsorbate',
               )
 
-FS = Reactant.Reactant(
+slab = Reactant.Reactant(
     species_name='slab',
     traj_loc=home+'/src/Delta/test/slab/qn.traj',
     species_type = 'slab',
               )
 
-rxn = Reaction.Reaction(FSs=[FS],ISs=[IS],refs=refs)
+rxn = Reaction.Reaction(FSs=[slab],ISs=[COOH],refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
 
-print "Testing gas"
+print "Testing gas, explicit"
 
 FS = Reactant.Reactant(
     species_name='CH3OH',
@@ -47,6 +47,14 @@ rxn = Reaction.Reaction(FSs=[FS],ISs=[],refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
+
+print "Testing gas, implicit"
+
+rxn = Reaction.Reaction(FSs=['H2'],ISs=[],refs=refs)
+print refs
+print "dE: ",rxn.get_dE(verbose=False)
+print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
+
 
 print "Testing diff pw"
 

@@ -20,6 +20,12 @@ class Reaction:
             tag = '',
             electrochemical=False,
             ignore=[], ###????
+            #Default calc params for gas eforms
+            calc_params={
+                'xc': 'BEEF', 
+                'psp': {'H': 'bd57da0722753ddfd9833a65b40bb853', 'C': 'ab446d787031eba755f1d5ee46644bb0', 'O': 'e057bbcf3229fb5d8c36c0c92f9568b4'}, 
+                'pw': '550', 
+                'kpts': '111'},
             ):
 
         self.ISs = ISs
@@ -29,10 +35,13 @@ class Reaction:
         self.refs = refs
         self.electrochemical=electrochemical
         self.gases = {}
+        self.calc_params = calc_params
+        self.default_params = calc_params
         
         #checking calc params
-        #need to assign calc_params in the case that IS or FS list is length zero
         for i,state in enumerate(self.FSs+self.ISs):
+            if isinstance(state,basestring):
+                continue
             if i==0:
                 #Set initial calc_params to be that of first state
                 self.calc_params=state.calc_params
@@ -50,9 +59,31 @@ class Reaction:
                         self.calc_params['psp'][elem]=state.calc_params['psp'][elem]
             else:
                     print "Error: calc params are different."    
-                    print (self.FSs+self.ISs)[0].species_name,": ", self.calc_params 
-                    print state.species_name,": ", state.calc_params
+                    print self.calc_params,'\n', state.calc_params
                     exit()
+        
+        #Open gas DB
+        classloc =  '/'.join(__file__.split('/')[0:-1])
+        gasDB = pickle.load(open(classloc+'/gases.pkl','rb'))
+
+        #if any states are strings, convert them to relevant reactant object
+        for states in [self.ISs,self.FSs]:
+            for i,state in enumerate(states):
+                if isinstance(state,basestring):
+                    #if all states are strings, calc params are default (provided)
+                    #if not all states are strings, calc params are those of non-string
+                    g = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
+                    g = g.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
+                    g = g.filter(lambda x: state == x.surf_name)
+                    for elem in string2symbols(state):
+                        if  elem in self.calc_params['psp']:
+                            g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
+                        elif elem not in self.calc_params['psp']:
+                            g = g.filter(lambda x: self.default_params['psp'][elem] == x.calc_params['psp'][elem])
+                    if len(g.data)>1:
+                        print "Warning: Ambiguous gas phase reference"
+                    states[i]= g.data[0]
+
 
         #Find elemental difference between IS and FS
         self.comp_dict = {}
@@ -73,9 +104,6 @@ class Reaction:
         #This info will be moved to gas DB
         gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear'],'CH3OH':[0,1,'nonlinear']}
         
-        #Reference gases
-        classloc =  '/'.join(__file__.split('/')[0:-1])
-        gasDB = pickle.load(open(classloc+'/gases.pkl','rb'))
         gasDB = gasDB.filter(lambda x: self.calc_params['xc'] == x.calc_params['xc'])
         gasDB = gasDB.filter(lambda x: self.calc_params['pw'] == x.calc_params['pw'])
         
