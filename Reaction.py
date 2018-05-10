@@ -32,30 +32,28 @@ class Reaction:
         
         #checking calc params
         #need to assign calc_params in the case that IS or FS list is length zero
-        for FS in self.FSs:
-            if isinstance(FS, str):
-                pass
-            for IS in self.ISs:
-                if isinstance(IS, str):
-                    pass
-                #for item in ignore:
-                #    IS.calc_params[item] = None
-                #    FS.calc_params[item] = None
-                #make sure calculation parameters are equivalent in IS and FS
-                if (    IS.calc_params['pw'] == FS.calc_params['pw'] and
-                        IS.calc_params['xc'] == FS.calc_params['xc'] and
-                        IS.calc_params['kpts'] == FS.calc_params['kpts'] ):
-                    #need a way to check psps too
-                    if len(IS.calc_params['psp']) > len(FS.calc_params['psp']):
-                        self.calc_params = IS.calc_params
-                    else:
-                        self.calc_params = FS.calc_params
-                else:
-                    print "Error: IS and FS calc params are different."    
-                    print "IS: ", self.IS.calc_params 
-                    print "FS: ", self.FS.calc_params
+        for i,state in enumerate(self.FSs+self.ISs):
+            if i==0:
+                #Set initial calc_params to be that of first state
+                self.calc_params=state.calc_params
+                continue
+            #make sure calculation parameters are equivalent in all states
+            if (    self.calc_params['pw'] == state.calc_params['pw'] and
+                    self.calc_params['xc'] == state.calc_params['xc'] and
+                    self.calc_params['kpts'] == state.calc_params['kpts'] ):
+                for elem in state.calc_params['psp']:
+                    if (    elem in self.calc_params['psp'] and 
+                            self.calc_params['psp'][elem] != self.calc_params['psp'][elem]):
+                        print 'PSPs not equivalent'
+                        exit()
+                    elif elem not in self.calc_params['psp']:
+                        self.calc_params['psp'][elem]=state.calc_params['psp'][elem]
+            else:
+                    print "Error: calc params are different."    
+                    print (self.FSs+self.ISs)[0].species_name,": ", self.calc_params 
+                    print state.species_name,": ", state.calc_params
                     exit()
-        
+
         #Find elemental difference between IS and FS
         self.comp_dict = {}
         for IS in self.ISs:
@@ -73,7 +71,7 @@ class Reaction:
 
         #Collecting reactants of required reference gases
         #This info will be moved to gas DB
-        gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear']}
+        gas_params = {'H2':[0,2,'linear'],'O2':[2,2,'linear'],'H2O':[0,2,'nonlinear'],'CH4':[0,12,'nonlinear'],'CH3OH':[0,1,'nonlinear']}
         
         #Reference gases
         classloc =  '/'.join(__file__.split('/')[0:-1])
