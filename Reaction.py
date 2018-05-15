@@ -41,7 +41,7 @@ class Reaction:
         self.default_params = calc_params
         
         #checking calc params
-        for i,state in enumerate(self.FSs+self.ISs):
+        for i,state in enumerate(self.ISs+self.FSs):
             if isinstance(state,basestring):
                 continue
             if i==0:
