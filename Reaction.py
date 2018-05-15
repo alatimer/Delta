@@ -60,7 +60,7 @@ class Reaction:
                     elif elem not in self.calc_params['psp']:
                         self.calc_params['psp'][elem]=state.calc_params['psp'][elem]
             else:
-                    print "Error: calc params are different."    
+                    print "Error: calc params are different. Make sure a gas is not the first state passed."    
                     print self.calc_params,'\n', state.calc_params
                     exit()
         
