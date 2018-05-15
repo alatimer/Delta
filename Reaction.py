@@ -15,7 +15,7 @@ class Reaction:
     def __init__(self, 
             ISs = [], #Reactant type
             FSs =  [], #Reactant type
-            refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
+            dft_refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
             name = None, #string
             tag = '',
             electrochemical=False,
@@ -23,7 +23,9 @@ class Reaction:
             #Default calc params for gas eforms
             calc_params={
                 'xc': 'BEEF', 
-                'psp': {'H': 'bd57da0722753ddfd9833a65b40bb853', 'C': 'ab446d787031eba755f1d5ee46644bb0', 'O': 'e057bbcf3229fb5d8c36c0c92f9568b4'}, 
+                'psp': {'H': 'bd57da0722753ddfd9833a65b40bb853', 
+                        'C': 'ab446d787031eba755f1d5ee46644bb0', 
+                        'O': 'e057bbcf3229fb5d8c36c0c92f9568b4'}, 
                 'pw': '550', 
                 'kpts': '111'},
             ):
@@ -32,7 +34,7 @@ class Reaction:
         self.FSs = FSs
         self.name = name
         self.tag = tag
-        self.refs = refs
+        self.dft_refs = dft_refs
         self.electrochemical=electrochemical
         self.gases = {}
         self.calc_params = calc_params
@@ -111,9 +113,9 @@ class Reaction:
         i = 0
         while i<4:
           i+=1
-          for elem in self.refs:
+          for elem in self.dft_refs:
             if elem in self.calc_params['psp']:
-              for gas in refs[elem]:
+              for gas in dft_refs[elem]:
                 if elem in gas:
                   g = gasDB.filter(lambda x: gas == x.surf_name)
                   g = g.filter(lambda x: self.calc_params['psp'][elem] == x.calc_params['psp'][elem])
@@ -146,12 +148,12 @@ class Reaction:
             dE+=engfun(FS,T,P)
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
-                for gas in self.refs[elem]:
+                for gas in self.dft_refs[elem]:
                     ##for liquid water
                     if gas == 'H2O' and self.electrochemical==True:
-                        dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,101325*0.035))
+                        dE += self.comp_dict[elem]*(self.dft_refs[elem][gas] * engfun(self.gases[gas],T,101325*0.035))
                     else:
-                        dE += self.comp_dict[elem]*(self.refs[elem][gas] * engfun(self.gases[gas],T,P))
+                        dE += self.comp_dict[elem]*(self.dft_refs[elem][gas] * engfun(self.gases[gas],T,P))
         if verbose:
             print " Elemental Difference: ",self.comp_dict
         return dE

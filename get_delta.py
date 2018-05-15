@@ -6,10 +6,10 @@ import sys
 import os
 
 #H2,H2O ref
-refs = {'H':{'H2':0.5},'O':{'H2O':1,'H2':-1},'C':{'CH4':1,'H2':-2}}
+#refs = {'H':{'H2':0.5},'O':{'H2O':1,'H2':-1},'C':{'CH4':1,'H2':-2}}
 
 #H2,O2 ref
-#refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1,'H2':-2}}
+refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1,'H2':-2}}
 
 home = os.getenv('HOME')
 
@@ -26,7 +26,7 @@ slab = Reactant.Reactant(
     species_type = 'slab',
               )
 
-rxn = Reaction.Reaction(FSs=[slab],ISs=[COOH],refs=refs)
+rxn = Reaction.Reaction(FSs=[slab],ISs=[COOH],dft_refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
@@ -43,14 +43,14 @@ FS = Reactant.Reactant(
     symmetrynumber=1,
               )
 
-rxn = Reaction.Reaction(FSs=[FS],ISs=[],refs=refs)
+rxn = Reaction.Reaction(FSs=[FS],ISs=[],dft_refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
 
 print "Testing gas, implicit"
 
-rxn = Reaction.Reaction(FSs=['H2'],ISs=[],refs=refs)
+rxn = Reaction.Reaction(FSs=['H2'],ISs=[],dft_refs=refs)
 print refs
 print "dE: ",rxn.get_dE(verbose=False)
 print "dG: ",rxn.get_dG(T=300,P=101325,verbose=False)
