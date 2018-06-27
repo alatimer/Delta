@@ -7,19 +7,20 @@ from ase.vibrations import Vibrations
 from ase.thermochemistry import HarmonicThermo, IdealGasThermo
 from Reactant import Reactant
 from ase.atoms import string2symbols
+import copy
 
 class Reaction:
     """
     """
 
     def __init__(self, 
-            ISs = [], #Reactant type
-            FSs =  [], #Reactant type
+            ISs = None, #Reactant type
+            FSs =  None, #Reactant type
             dft_refs = {'H':{'H2':0.5},'O':{'O2':0.5},'C':{'CH4':1.,'H2':-2.}},
             name = None, #string
             tag = '',
             electrochemical=False,
-            ignore=[], ###????
+            ignore=None, ###????
             #Default calc params for gas eforms
             calc_params={
                 'xc': 'BEEF', 
@@ -30,8 +31,8 @@ class Reaction:
                 'kpts': '111'},
             ):
 
-        self.ISs = ISs
-        self.FSs = FSs
+        self.ISs = copy.copy(ISs)
+        self.FSs = copy.copy(FSs)
         self.name = name
         self.tag = tag
         self.dft_refs = dft_refs
@@ -39,7 +40,6 @@ class Reaction:
         self.gases = {}
         self.calc_params = calc_params
         self.default_params = calc_params
-        
         #checking calc params
         for i,state in enumerate(self.ISs+self.FSs):
             if isinstance(state,basestring):
@@ -50,8 +50,13 @@ class Reaction:
                 continue
             #make sure calculation parameters are equivalent in all states
             if (    self.calc_params['pw'] == state.calc_params['pw'] and
-                    self.calc_params['xc'] == state.calc_params['xc'] and
-                    self.calc_params['kpts'] == state.calc_params['kpts'] ):
+                    self.calc_params['xc'] == state.calc_params['xc'] ):
+                if (    self.calc_params['kpts'] != state.calc_params['kpts'] and
+                        self.ISs[0].species_type != 'bulk'):
+                    print "Warning: calc params are different. Make sure a gas is not the first state passed."    
+                    print self.calc_params,'\n', state.calc_params
+                    exit()
+
                 for elem in state.calc_params['psp']:
                     if (    elem in self.calc_params['psp'] and 
                             self.calc_params['psp'][elem] != self.calc_params['psp'][elem]):
@@ -60,7 +65,7 @@ class Reaction:
                     elif elem not in self.calc_params['psp']:
                         self.calc_params['psp'][elem]=state.calc_params['psp'][elem]
             else:
-                    print "Error: calc params are different. Make sure a gas is not the first state passed."    
+                    print "Warning: calc params are different. Make sure a gas is not the first state passed."    
                     print self.calc_params,'\n', state.calc_params
                     exit()
         

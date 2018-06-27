@@ -110,6 +110,8 @@ class Reactant:
         if len(calc_params)<3:
             print "ERROR: Unable to extract calculator parameters automatically, user can supply manually."
             exit()
+        
+        inp_file.close()
         return calc_params
 
     def beef_reader(self):
@@ -148,11 +150,12 @@ class Reactant:
             Gcorr = self.gibbs.get_gibbs_energy(T,P,verbose=verbose)
         elif self.species_type == 'adsorbate':
             Gcorr = self.gibbs.get_helmholtz_energy(T,verbose=verbose)
-        elif self.species_type == 'slab':
+        elif self.species_type == 'slab' or self.species_type=='bulk':
             Gcorr = 0
         else:
             print "Error: ambiguous species type for function get_dGcorr.  Should be 'gas' or 'adsorbate'."
             exit()
+
         return Gcorr
 
     def get_Hcorr(self,T,verbose=False):

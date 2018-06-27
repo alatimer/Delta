@@ -1,11 +1,11 @@
-#!/home/vossj/suncat/bin/python
+#!/usr/bin/env python
+
 #SBATCH -p iric
-#SBATCH --qos=iric
 #SBATCH --output=myjob.out
 #SBATCH --error=myjob.err
 #SBATCH --time=15:00:00
 #SBATCH --mail-type=FAIL,END                            #get emailed about job BEGIN, END, or FAIL
-#SBATCH  --mail-user=allegralatimer@gmail.com
+#SBATCH --mail-user=allegralatimer@gmail.com
 #SBATCH --nodes=1
 #SBATCH --mem-per-cpu=4000
 #SBATCH --ntasks-per-node=16
@@ -41,21 +41,21 @@ spinpol = True
 output = {'removesave':True}
 outdir = 'calcdir'
 
-save_pdos_pkl = True
-save_cube = True
-save_cd = True
+save_pdos_pkl = False
+save_cube = False
+save_cd = False
 
 for atom in atoms:
     if atom.symbol == 'H':
         atom.magmom = 0
     else:
-        atom.magmom = 2
+        atom.magmom = 1.5
 
 calc = espresso(pw=pw,	#plane-wave cutoff
                 dw=dw,		#density cutoff
                 xc=xc,		#exchange-correlation functional
                 kpts=(1,1,1), #k-point sampling
-                nbands=-10,	#10 extra bands besides the bands needed to hold
+                nbands=-30,	#10 extra bands besides the bands needed to hold
                 					#the valence electrons
                 sigma=0.1,
                 psppath = psppath,
@@ -67,6 +67,7 @@ calc = espresso(pw=pw,	#plane-wave cutoff
 					               'maxsteps':500,
 					               'diag':'david'
 					                },	#convergence parameters
+                output=output,
                 outdir=outdir)	#output directory for Quantum Espresso files
 
 if xc=='BEEF':
@@ -117,6 +118,7 @@ calc2 = vibespresso(pw=pw,	#plane-wave cutoff
 					               'maxsteps':500,
 					               'diag':'david'
 					                },	#convergence parameters
+                output=output,
                 outdirprefix='calcdirv')	#output directory for Quantum Espresso files
 
 atoms.set_calculator(calc2)
