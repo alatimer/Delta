@@ -7,13 +7,15 @@ import glob
 psps = ['esp','gbrv']
 xcs = ['RPBE','BEEF','PBE']
 pws = ['400','450','500','550','600','650','700']
-gases = ['CO','CO2','NH3','CH3OH','CH2O','N2','H2S','Cl2','O3']
+#gases = ['CO','CO2','NH3','CH3OH','CH2O','N2','H2S','Cl2','O3']
+gases = ['CO','CO2','NH3','CH3OH','N2','H2S','Cl2']
+#gases = ['O3']
 
 #test
 #psps = ['esp']
 #pws = ['400']
 #xcs = ['RPBE']
-#gases=['CO']
+#gases=['CH2O']
 
 
 
@@ -22,12 +24,18 @@ for gas in gases:
         for xc in xcs:
             for pw in pws:
                traj_loc='/home/users/alatimer/work_dir/gases/%s/%s/%s/%s'%(gas,psp,xc,pw)
-               print traj_loc
-               os.system('mkdir -p %s'%(traj_loc))
-               os.system('cp gas_opt.py %s'%(traj_loc))
-               os.system('cp trajs_gas/%s.traj %s/init.traj'%(gas,traj_loc))
+               lines = ' '.join(open(traj_loc+'/myjob.out','rb').readlines())
+               if 'Zero-point energy' in lines:
+                   #print "no rem: ",traj_loc
+                   continue
+               print "rem: ",traj_loc
+               #print lines
+               #print traj_loc
+               #os.system('mkdir -p %s'%(traj_loc))
+               #os.system('cp gas_opt.py %s'%(traj_loc))
+               #os.system('cp trajs_gas/%s.traj %s/init.traj'%(gas,traj_loc))
                os.chdir(traj_loc)
-               #os.system(' rm -r vib* myjob* calcdir* qn.log qn.traj uniq* node*')
+               os.system('rm -r vib* calcdirv_* uniq* node*')
 
                print os.getcwd()
                #for pkl in glob.glob('vib.???.pckl'):
