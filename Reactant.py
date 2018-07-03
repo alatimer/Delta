@@ -50,17 +50,20 @@ class Reactant:
         
         if vib_loc != None:
             self.vibs = self.vibs_reader(vib_loc)
-            if self.species_type == 'gas':
+            if self.species_type =='slab':
+                self.gibbs = None
+            elif self.species_type == 'gas':
                 self.gibbs = IdealGasThermo(vib_energies=self.vibs,
-                                potentialenergy=0,
-                                atoms=self.atoms,
-                                geometry=self.geometry,
-                                symmetrynumber=self.symmetrynumber,
-                                spin=self.spin,
-                                )
+                        potentialenergy=0,
+                        atoms=self.atoms,
+                        geometry=self.geometry,
+                        symmetrynumber=self.symmetrynumber,
+                        spin=self.spin,
+                        )
             elif self.species_type == 'adsorbate':
                 self.gibbs = HarmonicThermo(vib_energies = self.vibs, potentialenergy = 0)
             else:
+                print "Warning: unrecognized species_type: ",self.species_type
                 self.gibbs = None
 
     def get_calc_params(self):
@@ -75,11 +78,12 @@ class Reactant:
             calc_params = {'pw':None,'xc':None,'kpts':None,'psp':None}
             return calc_params
         #Get parameters from longest log file
-        size = 0
-        for i, cd in enumerate(calcdirs):
-            if  os.stat(cd).st_size  > size:
-                j = i
-                size = os.stat(cd).st_size 
+        #size = 0
+        #for i, cd in enumerate(calcdirs):
+        #    if  os.stat(cd).st_size  > size:
+        #        j = i
+        #        size = os.stat(cd).st_size 
+        j=0
         log_file = open(calcdirs[j],'r').readlines()
         inpdirs = glob(directory+'/*/pw.inp')
         inp_file = open(inpdirs[j],'r')
@@ -154,12 +158,18 @@ class Reactant:
         return vibenergies
 
     def get_Gcorr(self,T,P=101325,verbose=False):
-        if self.species_type == 'gas':
+        if self.species_type=='slab':
+            Gcorr=0
+        elif self.species_type == 'gas':
+            if len(self.vibs)==0:
+                print "ERROR: No vibrations for %s"%(self.traj_loc)
+                exit()
             Gcorr = self.gibbs.get_gibbs_energy(T,P,verbose=verbose)
         elif self.species_type == 'adsorbate':
+            if len(self.vibs)==0:
+                print "ERROR: No vibrations for %s"%(self.traj_loc)
+                exit()
             Gcorr = self.gibbs.get_helmholtz_energy(T,verbose=verbose)
-        elif self.species_type == 'slab' or self.species_type=='bulk':
-            Gcorr = 0
         else:
             print "Error: ambiguous species type for function get_dGcorr.  Should be 'gas' or 'adsorbate'."
             exit()

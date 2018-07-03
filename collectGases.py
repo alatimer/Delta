@@ -34,10 +34,11 @@ for psp in psps:
             for gas in gases:
                 directory=home+'/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
                 traj_loc=directory+'/qn.traj'
-                if gas == 'O3':
-                    vib_loc = home+'/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
-                else:
-                    vib_loc=directory
+                #if gas == 'O3':
+                #    vib_loc = home+'/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
+                #else:
+                #    vib_loc=directory
+                vib_loc = directory
                 if os.path.exists(traj_loc)==True  and os.stat(traj_loc).st_size > 0:
                     energy = read(traj_loc).get_potential_energy()
                     gc = Reactant.Reactant(
