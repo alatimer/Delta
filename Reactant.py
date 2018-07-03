@@ -74,9 +74,15 @@ class Reactant:
             print "WARNING: No log file found for: %s"%(self.species_name)
             calc_params = {'pw':None,'xc':None,'kpts':None,'psp':None}
             return calc_params
-        log_file = open(calcdirs[0],'r').readlines()
+        #Get parameters from longest log file
+        size = 0
+        for i, cd in enumerate(calcdirs):
+            if  os.stat(cd).st_size  > size:
+                j = i
+                size = os.stat(cd).st_size 
+        log_file = open(calcdirs[j],'r').readlines()
         inpdirs = glob(directory+'/*/pw.inp')
-        inp_file = open(inpdirs[0],'r')
+        inp_file = open(inpdirs[j],'r')
         
         calc_params = {}
         calc_params['psp'] = {}
@@ -143,6 +149,8 @@ class Reactant:
             vibenergies.append(float(meV))
         #convert from meV to eV for each mode
         vibenergies[:] = [round(ve/1000.,4) for ve in vibenergies]    
+        if vibenergies==[]:
+            print "Warning: No vibrational energies for %s"%(self.traj_loc)
         return vibenergies
 
     def get_Gcorr(self,T,P=101325,verbose=False):
