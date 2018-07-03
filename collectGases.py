@@ -5,7 +5,7 @@ from Delta import Reactant
 from ase.io import read,write
 import os
 
-gases = ['N2O','CH4','O2','H2O','H2','CO2','CO','CH2O','CH3OH','N2','NH3']
+gases = ['N2O','CH4','O2','H2O','H2','CO2','CO','CH2O','CH3OH','N2','NH3','O3']
 psps = ['esp','gbrv']
 xcs = ['RPBE','BEEF','PBE']
 #pws = ['400','550']
@@ -23,6 +23,7 @@ gas_params = {'H2':[0,2,'linear'],
             'N2':[0,2,'linear'],
             'N2O':[0,2,'linear'],
             'NH3':[0,3,'nonlinear'],
+            'O3':[0,2,'nonlinear'],
             }
 
 home = os.getenv('HOME')
@@ -33,16 +34,15 @@ for psp in psps:
             for gas in gases:
                 directory=home+'/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
                 traj_loc=directory+'/qn.traj'
-                #print traj_loc
+                if gas == 'O3':
+                    vib_loc = home+'/work_dir/gases/%s/%s/%s/%s/'%(gas,psp,xc,pw)
+                else:
+                    vib_loc=directory
                 if os.path.exists(traj_loc)==True  and os.stat(traj_loc).st_size > 0:
                     energy = read(traj_loc).get_potential_energy()
-                    #print traj_loc
-                    #if 'Zero-point energy' not in open(directory+'/myjob.out','r'):
-                    #    print directory
-                    #    print "no vibs for ",pw,psp,xc
                     gc = Reactant.Reactant(
                             traj_loc=traj_loc,
-                            vib_loc=directory,
+                            vib_loc=vib_loc,
                            # beef_loc=traj_loc,
                             species_type='gas',
                             surf_name=gas,
