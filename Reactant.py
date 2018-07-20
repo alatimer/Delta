@@ -158,7 +158,7 @@ class Reactant:
         return vibenergies
 
     def get_Gcorr(self,T,P=101325,verbose=False):
-        if self.species_type=='slab':
+        if self.species_type=='slab' or self.species_type=='bulk':
             Gcorr=0
         elif self.species_type == 'gas':
             if len(self.vibs)==0:
