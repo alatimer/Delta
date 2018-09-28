@@ -145,6 +145,16 @@ class Reaction:
         else:
             eng = 0
         return eng
+    
+    def H_fun(self,ac,T,P):
+        if ac !=None:
+            eng = (ac.atoms.get_potential_energy()+ac.get_Hcorr(T))
+        else:
+            eng = 0
+        return eng
+    
+ 
+
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
         dE = 0
         for IS in self.ISs:
@@ -167,8 +177,8 @@ class Reaction:
         return self.get_dX(engfun=self.E_fun,verbose=verbose)
     def get_dG(self,T,P=101325,verbose=False):
         return self.get_dX(engfun=self.G_fun,T=T,P=P,verbose=verbose)
-    def get_dH(self):
-        return
+    def get_dH(self,T,P=101325):
+        return self.get_dX(engfun=self.H_fun,T=T,P=P,verbose=False)
 
 class Reactions:
     """

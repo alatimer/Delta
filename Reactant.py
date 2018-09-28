@@ -177,10 +177,13 @@ class Reactant:
         return Gcorr
 
     def get_Hcorr(self,T,verbose=False):
-        if self.species_type == 'gas':
-            return self.gibbs.get_enthalpy(T, verbose=verbose)
+        if self.species_type=='slab' or self.species_type=='bulk':
+            Hcorr=0
+        elif self.species_type == 'gas':
+            Hcorr= self.gibbs.get_enthalpy(T, verbose=verbose)
         elif self.species_type == 'adsorbate':
-            return self.gibbs.get_internal_energy(T, verbose=verbose)
+            Hcorr= self.gibbs.get_internal_energy(T, verbose=verbose)
+        return Hcorr
 
 
 class Reactants:
