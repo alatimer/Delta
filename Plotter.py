@@ -41,7 +41,7 @@ class Plotter:
                 return getattr(self,attrname)
             except:
                 return [getattr(self,attrname)]*required_length
-
+        
         barrier_line_args = attr_to_list('barrier_line_args',
                 len(self.energies)-1)
         energy_line_widths = attr_to_list('energy_line_widths')
@@ -66,6 +66,8 @@ class Plotter:
                     [energy_list[i]]*2] 
                 for i,width in enumerate(energy_line_widths)]
         for i,line in enumerate(energy_lines):
+            if i!=0:
+                energy_line_args[i]['label']=None
             ax.plot(*line,**energy_line_args[i])
 
         #create barrier lines
