@@ -120,8 +120,3 @@ class Plotter:
                 ypos = energy_lines[i][1][0]
                 ax.annotate(label,[xpos,ypos],**args)
 
-################################################################################
-#   End of energy diagram class. Actual problem starts below.                  #
-################################################################################
-
-
