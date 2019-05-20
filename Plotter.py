@@ -42,8 +42,13 @@ class Plotter:
             except:
                 return [getattr(self,attrname)]*required_length
         
-        barrier_line_args = attr_to_list('barrier_line_args',
+        if type(self.barrier_line_args)==dict:
+            barrier_line_args = attr_to_list('barrier_line_args',
                 len(self.energies)-1)
+        elif type(self.barrier_line_args)==list:
+            barrier_line_args=self.barrier_line_args
+        else:
+            print "Warning: self.barrier_line_args type not recognized"
         energy_line_widths = attr_to_list('energy_line_widths')
         energy_line_args = attr_to_list('energy_line_args')
         label_args =attr_to_list('label_args')
