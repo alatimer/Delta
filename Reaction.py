@@ -134,6 +134,7 @@ class Reaction:
         return
 
     def E_fun(self,ac,T,P):
+        #T,P ignored
         if ac !=None:
             eng = ac.atoms.get_potential_energy()
         else:
@@ -147,6 +148,7 @@ class Reaction:
         return eng
     
     def H_fun(self,ac,T,P):
+        #P ignored
         if ac !=None:
             eng = (ac.atoms.get_potential_energy()+ac.get_Hcorr(T))
         else:
@@ -158,9 +160,15 @@ class Reaction:
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
         dE = 0
         for i,IS in enumerate(self.ISs):
-            dE-=engfun(IS,T,P[i])
+            if P!=None: #dG or dH
+                dE-=engfun(IS,T,P[i])
+            else: #dE
+                dE-=engfun(IS,T,P)
         for i,FS in enumerate(self.FSs):
-            dE+=engfun(FS,T,P[len(self.ISs)+i])
+            if P!=None: #dG or dH
+                dE+=engfun(FS,T,P[len(self.ISs)+i])
+            else: #dE
+                dE+=engfun(FS,T,P)
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
                 #All references at P=101325 except liquid H2O if echem==True. 
@@ -182,7 +190,7 @@ class Reaction:
             P = [P]*(len(self.ISs)+len(self.FSs))
         elif len(P)!=(len(self.ISs)+len(self.FSs)):
             print "Error: not enough pressures provided for all reactants"
-            exit(
+            exit()
         return self.get_dX(engfun=self.G_fun,T=T,P=P,verbose=verbose)
     def get_dH(self,T,P=101325):
         if type(P)!=list:
