@@ -12,7 +12,7 @@ import math
 
 from scipy.interpolate import InterpolatedUnivariateSpline as spline #used for barrier curves. Don't worry about it
 class Plotter:
-    def __init__(self,energies,barriers=[],labels=[]):
+    def __init__(self,energies,barriers=[],labels=[],barr_res=20):
         self.energies = energies
         self.barriers = barriers
         self.labels = labels
@@ -24,6 +24,7 @@ class Plotter:
         self.initial_stepnumber = 0
         self.energy_mode ='relative' #absolute
         self.energy_line_widths = 0.5
+        self.barr_res=barr_res
 
     def draw(self,ax=None):
 
@@ -88,7 +89,7 @@ class Plotter:
                 xs = [xi,xts,xf]
                 ys = [yi,yts,yf]
                 f = spline(xs,ys,k=2)
-                newxs = np.linspace(xi,xf,20)
+                newxs = np.linspace(xi,xf,self.barr_res)
                 newys = f(newxs)
                 line = [newxs,newys]
             barrier_lines.append(line)
