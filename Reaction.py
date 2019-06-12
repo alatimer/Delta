@@ -157,18 +157,20 @@ class Reaction:
 
     def get_dX(self,engfun=E_fun,T=None,P=None,verbose=False):
         dE = 0
-        for IS in self.ISs:
-            dE-=engfun(IS,T,P)
-        for FS in self.FSs:
-            dE+=engfun(FS,T,P)
+        for i,IS in enumerate(self.ISs):
+            dE-=engfun(IS,T,P[i])
+        for i,FS in enumerate(self.FSs):
+            dE+=engfun(FS,T,P[len(self.ISs)+i])
         for elem in self.comp_dict:
             if self.comp_dict[elem]!=0:
+                #All references at P=101325 except liquid H2O if echem==True. 
+                #To input other pressures, specify manually
                 for gas in self.dft_refs[elem]:
                     ##for liquid water
                     if gas == 'H2O' and self.electrochemical==True:
                         dE += self.comp_dict[elem]*(self.dft_refs[elem][gas] * engfun(self.gases[gas],T,101325*0.035))
                     else:
-                        dE += self.comp_dict[elem]*(self.dft_refs[elem][gas] * engfun(self.gases[gas],T,P))
+                        dE += self.comp_dict[elem]*(self.dft_refs[elem][gas] * engfun(self.gases[gas],T,101325))
         if verbose:
             print " Elemental Difference: ",self.comp_dict
         return dE
@@ -176,8 +178,18 @@ class Reaction:
     def get_dE(self,verbose=False):
         return self.get_dX(engfun=self.E_fun,verbose=verbose)
     def get_dG(self,T,P=101325,verbose=False):
+        if type(P)!=list:
+            P = [P]*(len(self.ISs)+len(self.FSs))
+        elif len(P)!=(len(self.ISs)+len(self.FSs)):
+            print "Error: not enough pressures provided for all reactants"
+            exit(
         return self.get_dX(engfun=self.G_fun,T=T,P=P,verbose=verbose)
     def get_dH(self,T,P=101325):
+        if type(P)!=list:
+            P = [P]*(len(self.ISs)+len(self.FSs))
+        elif len(P)!=(len(self.ISs)+len(self.FSs)):
+            print "Error: not enough pressures provided for all reactants"
+            exit()
         return self.get_dX(engfun=self.H_fun,T=T,P=P,verbose=False)
 
 class Reactions:
